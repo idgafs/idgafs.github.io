@@ -1,1 +1,374 @@
-<h1>upp</h1>
+<title>Live Radios | Medisno Solutions</title>
+ <link rel="shortcut icon" type="image/png" href="rad/favicon.ico">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<script src="https://kit.fontawesome.com/6f917e9db0.js" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+
+<style>
+#background {
+  object-fit: cover;
+  height: 100vh;
+  width: 100vw;
+  margin: auto;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  filter: blur(7px);
+  z-index: -1;
+}
+
+.outer-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.player-container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  height: 400px;
+  width: 325px;
+  margin: auto;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  box-shadow: 0 0 30px #f94c57;
+}
+
+#thumbnail {
+  position: absolute;
+  object-fit: fill;
+  height: 100%;
+  width: 100%;
+  top: -10%;
+  transition: 1s;
+  z-index: 3;
+}
+
+.box {
+  position: absolute;
+  height: 45%;
+  width: 100%;
+  background: linear-gradient(90deg, rgb(145, 145, 145), rgb(220, 220, 220));
+  z-index: 4;
+  bottom: -10%;
+  display: grid;
+  grid-template-colums: 35px 255px 35px;
+  grid-template-rows: 85px 25px 25px;
+  grid-template-areas:
+    "one two two three"
+    "four four four four"
+    "five five five five";
+  column-gap: 10px;
+}
+
+.play-pause {
+  grid-area: one;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.fa-pause-circle {
+  filter: invert(1);
+  cursor: pointer;
+  display: none;
+}
+
+#play,
+#prev-track,
+#next-track {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.track-info {
+  grid-area: two;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-left: 5%;
+  /* border: 1px solid red; */
+}
+
+#track-artist {
+  color: #f94c57;
+  font-family: "Lato", sans-serif;
+  font-weight: bold;
+  font-size: 1.125rem;
+  text-shadow: 0 0 15px white;
+}
+
+#track-title {
+  color: white;
+  font-family: "Lato", sans-serif;
+  font-size: 1rem;
+}
+
+.next-prev {
+  grid-area: three;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  /* border: 1px solid red; */
+}
+
+.progress-bar {
+  grid-area: four;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* border: 1px solid red; */
+}
+
+#progressBar {
+  appearance: none;
+  height: 5px;
+  background: white;
+  width: 57.5%;
+  outline: none;
+  border-radius: 30px;
+}
+
+#progressBar::-webkit-slider-thumb {
+  appearance: none;
+  height: 11px;
+  width: 11px;
+  outline: none;
+  background: #f94c57;
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+.track-time {
+  grid-area: five;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  /* border: 1px solid red; */
+}
+
+#currentTime {
+  font-family: "Lato", sans-serif;
+  font-size: 1rem;
+  color: white;
+}
+
+#durationTime {
+  font-family: "Lato", sans-serif;
+  font-size: 1rem;
+  color: #f94c57;
+  text-shadow: 0 0 15px white;
+}
+</style>
+<body>
+<div class="outer-container">
+  <img src="rad/ark.png" alt="Harry Styles' Fine Line album cover" id="background" />
+  <audio src="http://stream.zeno.fm/sxr8kkycjseuv" id="track" ></audio>
+</div>
+
+<div class="player-container">
+  <img src="rad/ark.png" alt="Harry Styles' Fine Line album cover" id="thumbnail" />
+
+  <div class="box">
+    <div class="play-pause">
+      <i class="far fa-play-circle fa-3x" id="play"></i>
+      <i class="far fa-pause-circle fa-3x" id="pause"></i>
+    </div>
+    <div class="track-info">
+      <div id="track-artist">Radio ARK</div>
+      <div id="track-title">Online</div>
+    </div>
+    <div class="next-prev">
+      <i class="far fa-arrow-alt-circle-left fa-2x" id="prev-track"></i>
+      <i class="far fa-arrow-alt-circle-right fa-2x" id="next-track"></i>
+    </div>
+    <div class="progress-bar">
+      <input type="range" id="progressBar" min="0" max="" value="0" disabled/>
+    </div>
+    <div class="track-time">
+      <div id="currentTime"></div>
+      <div id="durationTime"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const track = document.getElementById("track");
+const thumbnail = document.getElementById("thumbnail");
+const background = document.getElementById("background");
+const trackArtist = document.getElementById("track-artist");
+const trackTitle = document.getElementById("track-title");
+const progressBar = document.getElementById("progressBar");
+const currentTime = document.getElementById("currentTime");
+const durationTime = document.getElementById("durationTime");
+
+let play = document.getElementById("play");
+let pause = document.getElementById("pause");
+let next = document.getElementById("next-track");
+let prev = document.getElementById("prev-track");
+trackIndex = 0;
+
+tracks = [
+"http://stream.zeno.fm/sxr8kkycjseuv",
+  "https://radionepal.news/live/",
+  "https://node-17.zeno.fm/h527zwd11uquv?rj-ttl=5&rj-tok=AAABfTHcUl0AzK2ZKIonaHKgqA",
+"https://streaming.softnep.net:10988/;stream.nsv&type=mp3&volume=60",
+ "https://radio-broadcast.ekantipur.com/stream",
+ "https://node-08.zeno.fm/fvrx47wpg0quv?rj-ttl=5&rj-tok=AAABfTF764EA-pWpl73_qxbBYw",
+ "https://usa15.fastcast4u.com/proxy/hitsfm912?mp=/1",
+ "http://streaming.hamropatro.com:8789",
+   "http://streaming.hamropatro.com:8246/;stream.mp3",
+ "http://216.55.141.189:8683/;stream.mp3",
+  "https://live.itech.host:8379/stream",
+  "https://live.itech.host:9544/stream",
+  "http://stream.live.vc.bbcmedia.co.uk/bbc_world_service",
+   "https://node-02.zeno.fm/c0adewsyw8quv?rj-ttl=5&rj-tok=AAABfdyT25EAWXQ7HBy0Kwwk2g",
+   "http://peridot.streamguys.com:7150/Mirchi",
+   "https://live.itech.host:8167/stream",
+   "https://stream.galaxywebsolutions.com/proxy/tligradio_ne?mp=/stream",
+];
+thumbnails = [
+"rad/ark.png",
+  "rad/1.png",
+  "rad/2.jpg",
+  "rad/3.jpg",
+  "rad/4.png",
+  "rad/5.jpg",
+  "rad/6.jpg",
+  "rad/7.jpg",
+  "rad/8.jpg",
+  "rad/9.jpg",
+  "rad/10.jpg",
+  "rad/11.jpeg",
+  "rad/12.jpg",
+  "rad/13.jpg",
+  "rad/14.jpg",
+  "rad/36.jpg",
+  "rad/420.jpg",
+
+];
+trackArtists = ["ARK FM", "Radio Nepal", "Ujyaalo Radio Network","Radio Thaha Sanchar FM","Radio Kantipur","Radio Audio","Hits FM","Radio Nagarik","Star FM","Newa FM","Bhorukawa FM","Radio Mithila","BBC world Service","Sanskrit FM","Mirchi FM","Good News FM","True Life in God"];
+trackTitles = ["Online", "100.0 MHz", "90.0 MHz","99.4 MHz","96.1 MHz","106.3 MHz","91.2 MHz","96.5 MHz","95.2 MHz","106.6 MHz","92.8 MHz","100.8 MHz","Online","Online","98.3 MHz","105.1 MHz","Online"];
+
+let playing = true;
+window.onload = pausePlay();
+function pausePlay() {
+  if (playing) {
+    play.style.display = "none";
+    pause.style.display = "block";
+
+    thumbnail.style.transform = "scale(1.25)";
+
+    track.play();
+    playing = false;
+  } else {
+    pause.style.display = "none";
+    play.style.display = "block";
+
+    thumbnail.style.transform = "scale(1)";
+
+    track.pause();
+    playing = true;
+  }
+}
+
+play.addEventListener("click", pausePlay);
+pause.addEventListener("click", pausePlay);
+
+track.addEventListener("ended", nextTrack);
+
+function nextTrack() {
+  trackIndex++;
+  if (trackIndex > tracks.length - 1) {
+    trackIndex = 0;
+  }
+
+  track.src = tracks[trackIndex];
+  thumbnail.src = thumbnails[trackIndex];
+  background.src = thumbnails[trackIndex];
+
+  trackArtist.textContent = trackArtists[trackIndex];
+  trackTitle.textContent = trackTitles[trackIndex];
+
+  playing = true;
+  pausePlay();
+}
+
+next.addEventListener("click", nextTrack);
+
+function prevTrack() {
+  trackIndex--;
+  if (trackIndex < 0) {
+    trackIndex = tracks.length - 1;
+  }
+
+  track.src = tracks[trackIndex];
+  thumbnail.src = thumbnails[trackIndex];
+  background.src = thumbnails[trackIndex];
+
+  trackArtist.textContent = trackArtists[trackIndex];
+  trackTitle.textContent = trackTitles[trackIndex];
+
+  playing = true;
+  pausePlay();
+}
+
+prev.addEventListener("click", prevTrack);
+
+function progressValue() {
+  progressBar.max = track.duration;
+  progressBar.value = track.currentTime;
+
+  currentTime.textContent = formatTime(track.currentTime);
+  durationTime.textContent = formatTime(track.duration);
+}
+
+setInterval(progressValue, 500);
+
+function formatTime(sec) {
+  let minutes = Math.floor(sec / 60);
+  let seconds = Math.floor(sec - minutes * 60);
+  if (seconds < 10) {
+    seconds = `0${seconds}`;
+  }
+  return `${minutes}:${seconds}`;
+}
+
+function changeProgressBar() {
+  track.currentTime = progressBar.value;
+}
+
+<!-- progressBar.addEventListener("click", changeProgressBar); -->
+
+document.body.addEventListener("click", function(e){ 
+if(event.target.localName=="div" || event.target.localName=="img"){
+pausePlay();
+}
+});
+
+document.addEventListener('keydown', function (e) {
+if (e.key === "ArrowRight") {
+nextTrack() ;
+}else if(e.key === "ArrowLeft") {
+prevTrack();
+}else if(e.key === " "){
+pausePlay();
+}
+});
+</script>
+</body>
